@@ -1,0 +1,24 @@
+{
+	"networks": {
+		"emulator": "127.0.0.1:3569",
+		"mainnet": "access.mainnet.nodes.onflow.org:9000",
+		"sandboxnet": "access.sandboxnet.nodes.onflow.org:9000",
+		"testnet": "access.devnet.nodes.onflow.org:9000"
+	},
+	"accounts": {
+		"emulator-account": {
+			"address": "f8d6e0586b0a20c7",
+			"key": "e5d9314058a659c9f7b9dd91ef15fa84fc645f47dc8b7bd08a4c1543d5d9c847"
+		}
+	},
+	"contracts": {
+		"FungibleToken": "./cadence/contracts/utility/FungibleToken.cdc",
+		"NonFungibleToken": "./cadence/contracts/utility/NonFungibleToken.cdc",
+		"MagicWeaponNFT": "./cadence/contracts/MagicWeaponNFT.cdc"
+	},
+	"deployments": {
+		"emulator": {
+			"emulator-account": ["FungibleToken", "NonFungibleToken", "MagicWeaponNFT"]
+		}
+	}
+}
