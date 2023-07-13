@@ -9,6 +9,16 @@
 		"emulator-account": {
 			"address": "f8d6e0586b0a20c7",
 			"key": "e5d9314058a659c9f7b9dd91ef15fa84fc645f47dc8b7bd08a4c1543d5d9c847"
+		},
+		"testnet-account": {
+			"address": "0x9f0cd65096757818",
+			"key": {
+				"type": "hex",
+				"index": 0,
+				"signatureAlgorithm": "ECDSA_secp256k1",
+				"hashAlgorithm": "SHA3_256",
+				"privateKey": "03133b42bbe927ea3b388fb7adb9817f54899fe27bad9963a34a0a1c4398071c"
+			}
 		}
 	},
 	"contracts": {
@@ -20,6 +30,9 @@
 	"deployments": {
 		"emulator": {
 			"emulator-account": ["FungibleToken", "NonFungibleToken", "MetadataViews", "MagicWeaponNFT"]
+		},
+		"testnet": {
+			"testnet-account": ["FungibleToken", "NonFungibleToken", "MetadataViews", "MagicWeaponNFT"]
 		}
 	}
 }
