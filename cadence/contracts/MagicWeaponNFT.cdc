@@ -52,7 +52,19 @@ pub contract MagicWeaponNFT : NonFungibleToken {
         }
     }
 
-    pub resource Collection : NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic {
+    pub resource interface MagicWeaponNFTCollectionPublic {
+        pub fun deposit(token: @NonFungibleToken.NFT)
+        pub fun getIDs(): [UInt64]
+        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT
+        pub fun borrowMagicWeaponNFT(id: UInt64): &MagicWeaponNFT.NFT? {
+            post {
+                (result == nil) || (result?.id == id):
+                    "Cannot borrow ExampleNFT reference: the ID of the returned reference is incorrect"
+            }
+        }
+    }
+
+    pub resource Collection : NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic, MagicWeaponNFTCollectionPublic {
 
         pub var ownedNFTs: @{UInt64 : NonFungibleToken.NFT}
 
@@ -82,6 +94,16 @@ pub contract MagicWeaponNFT : NonFungibleToken {
 
         pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
             return (&self.ownedNFTs[id] as &NonFungibleToken.NFT?)!
+        }
+
+        pub fun borrowMagicWeaponNFT(id: UInt64): &MagicWeaponNFT.NFT? {
+            if self.ownedNFTs[id] != nil {
+                // Create an authorized reference to allow downcasting
+                let ref = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)!
+                return ref as! &MagicWeaponNFT.NFT
+            }
+
+            return nil
         }
 
         pub fun borrowNFTSafe(id: UInt64): &NonFungibleToken.NFT? {
@@ -120,6 +142,6 @@ pub contract MagicWeaponNFT : NonFungibleToken {
         self.CollectionPublicPath = /public/MagicWeaponNFTCollection
 
         self.account.save(<-self.createEmptyCollection(), to: self.CollectionStoragePath)
-        self.account.link<&{NonFungibleToken.CollectionPublic}>(self.CollectionPublicPath, target: self.CollectionStoragePath)
+        self.account.link<&MagicWeaponNFT.Collection{NonFungibleToken.CollectionPublic, MagicWeaponNFT.MagicWeaponNFTCollectionPublic}>(self.CollectionPublicPath, target: self.CollectionStoragePath)
     }
 }
