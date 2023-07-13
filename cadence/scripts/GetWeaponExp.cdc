@@ -8,4 +8,11 @@ pub fun main() {
     let weapon = collectionRef.borrowMagicWeaponNFT(id: 1)!
     log("Weapon exp")
     log(weapon.exp)
+
+    log("Weapon name")
+    log(weapon.arcaneType.name)
+    log("Weapon description")
+    log(weapon.arcaneType.description)
+    log("Weapon thumbnail")
+    log(weapon.arcaneType.thumbnail)
 }

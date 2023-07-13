@@ -1,4 +1,5 @@
 import NonFungibleToken from "./utility/NonFungibleToken.cdc"
+import MetadataViews from "./utility/MetadataViews.cdc"
 
 pub contract MagicWeaponNFT : NonFungibleToken {
     
@@ -7,32 +8,51 @@ pub contract MagicWeaponNFT : NonFungibleToken {
 
     access(contract) var idCount: UInt64
 
-    access(contract) var totalArcaneTypeCount: UInt64
+    pub var arcaneTypes: [ArcaneTypeData]
+
+    pub var arcaneGenerator: Int
 
     // Collection related paths
     pub let CollectionStoragePath: StoragePath
     pub let CollectionPublicPath: PublicPath
+    // Admin related paths
+    pub let AdminStoragePath: StoragePath
 
     // Events
     pub event ContractInitialized()
     pub event Withdraw(id: UInt64, from: Address?)
     pub event Deposit(id: UInt64, to: Address?)
 
-    pub event MintedNFT(id: UInt64, arcaneType: UInt64)
-    pub event Upgraded(id: UInt64, exp: UFix64)
+    pub event MintedNFT(id: UInt64)
+    pub event Upgraded(id: UInt64, exp: UFix64, owner: Address?)
+    pub event NewArcaneTypeAdded(name: String, description: String, thumbnail: String)
 
-    pub resource NFT : NonFungibleToken.INFT {
+    pub struct ArcaneTypeData {
+        
+        pub let name: String
+        pub let description: String
+        pub let thumbnail: String
+
+        init(name: String, description: String, thumbnail: String) {
+            self.name = name
+            self.description = description
+            self.thumbnail = thumbnail
+        }
+    }
+
+    pub resource NFT : NonFungibleToken.INFT, MetadataViews.Resolver {
 
         // The unique ID that differentiates each NFT
         pub let id: UInt64
 
-        pub let arcaneType: UInt64
+        pub let arcaneType: MagicWeaponNFT.ArcaneTypeData
 
         pub var exp: UFix64
 
-        init(arcaneType: UInt64) {
+        init() {
             self.id = MagicWeaponNFT.idCount
-            self.arcaneType = arcaneType
+            self.arcaneType = MagicWeaponNFT.arcaneTypes[MagicWeaponNFT.arcaneGenerator % MagicWeaponNFT.arcaneTypes.length]
+            MagicWeaponNFT.arcaneGenerator = MagicWeaponNFT.arcaneGenerator + 1
             self.exp = 0.0
 
             MagicWeaponNFT.idCount = MagicWeaponNFT.idCount + 1
@@ -44,7 +64,20 @@ pub contract MagicWeaponNFT : NonFungibleToken {
                 amount > 0.0: "Exp amount added to the weapon must be greater than zero"
             }
             self.exp = self.exp + amount
-            emit Upgraded(id: self.id, exp: self.exp)
+            emit Upgraded(id: self.id, exp: self.exp, owner: self.owner?.address)
+        }
+
+        pub fun getViews(): [Type] {
+            return [Type<MetadataViews.Display>(), Type<String>()]
+        }
+
+        pub fun resolveView(_ view: Type): AnyStruct? {
+            switch view {
+                case Type<MetadataViews.Display>():
+                    let file = MetadataViews.HTTPFile(self.arcaneType.thumbnail)
+                    return MetadataViews.Display(name: self.arcaneType.name, description: self.arcaneType.description, thumbnail: file)
+            }
+            return nil
         }
 
         destroy() {
@@ -64,7 +97,7 @@ pub contract MagicWeaponNFT : NonFungibleToken {
         }
     }
 
-    pub resource Collection : NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic, MagicWeaponNFTCollectionPublic {
+    pub resource Collection : NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic, MagicWeaponNFTCollectionPublic, MetadataViews.ResolverCollection {
 
         pub var ownedNFTs: @{UInt64 : NonFungibleToken.NFT}
 
@@ -113,6 +146,12 @@ pub contract MagicWeaponNFT : NonFungibleToken {
             return nil
         }
 
+        pub fun borrowViewResolver(id: UInt64): &AnyResource{MetadataViews.Resolver} {
+            let nft = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)!
+            let magicWeaponNFT = nft as! &MagicWeaponNFT.NFT
+            return magicWeaponNFT
+        }
+
         destroy() {
             pre {
                 self.ownedNFTs.length == 0: "NFTs still contained in this collection"
@@ -127,21 +166,43 @@ pub contract MagicWeaponNFT : NonFungibleToken {
     }
 
     pub fun mintNFT(): @MagicWeaponNFT.NFT {
-        let arcaneType = unsafeRandom() % self.totalArcaneTypeCount
-        let newNFT <- create NFT(arcaneType: arcaneType)
-        emit MintedNFT(id: newNFT.id, arcaneType: newNFT.arcaneType)
+        let newNFT <- create NFT()
+        emit MintedNFT(id: newNFT.id)
         return <- newNFT
+    }
+
+    pub resource Administrator {
+
+        pub fun AddNewArcaneType(name: String, description: String, thumbnail: String) {
+            let newArcane = MagicWeaponNFT.ArcaneTypeData(name: name, description: description, thumbnail: thumbnail)
+            MagicWeaponNFT.arcaneTypes.append(newArcane)
+            emit NewArcaneTypeAdded(name: newArcane.name, description: newArcane.description, thumbnail: newArcane.thumbnail)
+        }
     }
 
     init() {
         self.totalSupply = 0
+        self.arcaneGenerator = 0
         self.idCount = 1
-        self.totalArcaneTypeCount = 10
+        let mysticArt = MagicWeaponNFT.ArcaneTypeData(name: "Mystic Art", description: "111", thumbnail: "aaa")
+        let thunder = MagicWeaponNFT.ArcaneTypeData(name: "Thunder", description: "222", thumbnail: "bbb")
+        let arcaneEnergy = MagicWeaponNFT.ArcaneTypeData(name: "Arcane Energy", description: "333", thumbnail: "ccc")
+        let typo = MagicWeaponNFT.ArcaneTypeData(name: "Typo", description: "444", thumbnail: "ddd")
+        let aceFire = MagicWeaponNFT.ArcaneTypeData(name: "Ace Fire", description: "555", thumbnail: "eee")
+        let wind = MagicWeaponNFT.ArcaneTypeData(name: "Wind", description: "666", thumbnail: "fff")
+        let bathToy = MagicWeaponNFT.ArcaneTypeData(name: "Bath Toy", description: "777", thumbnail: "ggg")
+        let electric = MagicWeaponNFT.ArcaneTypeData(name: "Electric", description: "888", thumbnail: "hhh")
+        let water = MagicWeaponNFT.ArcaneTypeData(name: "Water", description: "999", thumbnail: "iii")
+        let timeStone = MagicWeaponNFT.ArcaneTypeData(name: "Time Stone", description: "AAA", thumbnail: "jjj")
+        self.arcaneTypes = [mysticArt, thunder, arcaneEnergy, typo, aceFire, wind, bathToy, electric, water, timeStone]
 
         self.CollectionStoragePath = /storage/MagicWeaponNFTCollection
         self.CollectionPublicPath = /public/MagicWeaponNFTCollection
+        self.AdminStoragePath = /storage/MagicWeaponNFTAdmin
 
         self.account.save(<-self.createEmptyCollection(), to: self.CollectionStoragePath)
-        self.account.link<&MagicWeaponNFT.Collection{NonFungibleToken.CollectionPublic, MagicWeaponNFT.MagicWeaponNFTCollectionPublic}>(self.CollectionPublicPath, target: self.CollectionStoragePath)
+        self.account.link<&MagicWeaponNFT.Collection{NonFungibleToken.CollectionPublic, MagicWeaponNFT.MagicWeaponNFTCollectionPublic, MetadataViews.ResolverCollection}>(self.CollectionPublicPath, target: self.CollectionStoragePath)
+    
+        self.account.save(<-create self.Administrator(), to: self.AdminStoragePath)
     }
 }

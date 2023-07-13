@@ -14,11 +14,12 @@
 	"contracts": {
 		"FungibleToken": "./cadence/contracts/utility/FungibleToken.cdc",
 		"NonFungibleToken": "./cadence/contracts/utility/NonFungibleToken.cdc",
+		"MetadataViews": "./cadence/contracts/utility/MetadataViews.cdc",
 		"MagicWeaponNFT": "./cadence/contracts/MagicWeaponNFT.cdc"
 	},
 	"deployments": {
 		"emulator": {
-			"emulator-account": ["FungibleToken", "NonFungibleToken", "MagicWeaponNFT"]
+			"emulator-account": ["FungibleToken", "NonFungibleToken", "MetadataViews", "MagicWeaponNFT"]
 		}
 	}
 }
