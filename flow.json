@@ -25,14 +25,16 @@
 		"FungibleToken": "./cadence/contracts/utility/FungibleToken.cdc",
 		"NonFungibleToken": "./cadence/contracts/utility/NonFungibleToken.cdc",
 		"MetadataViews": "./cadence/contracts/utility/MetadataViews.cdc",
-		"MagicWeaponNFT": "./cadence/contracts/MagicWeaponNFT.cdc"
+		"ManaTokenInterface": "./cadence/contracts/ManaTokenInterface.cdc",
+		"MagicArtifactNFT": "./cadence/contracts/MagicArtifactNFT.cdc",
+		"ManaToken": "./cadence/contracts/ManaToken.cdc"
 	},
 	"deployments": {
 		"emulator": {
-			"emulator-account": ["FungibleToken", "NonFungibleToken", "MetadataViews", "MagicWeaponNFT"]
+			"emulator-account": ["FungibleToken", "NonFungibleToken", "MetadataViews", "ManaTokenInterface", "MagicArtifactNFT", "ManaToken"]
 		},
 		"testnet": {
-			"testnet-account": ["FungibleToken", "NonFungibleToken", "MetadataViews", "MagicWeaponNFT"]
+			"testnet-account": ["FungibleToken", "NonFungibleToken", "MetadataViews", "ManaTokenInterface", "MagicArtifactNFT", "ManaToken"]
 		}
 	}
 }
