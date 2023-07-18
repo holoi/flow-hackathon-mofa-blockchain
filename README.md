@@ -11,3 +11,8 @@ Conversely, `ManaToken` serves as a fungible token within the game universe. The
 - **Enchantment**: Players also have the opportunity to enhance the power of their `MagicArtifactNFT` by enchanting it with existing `ManaToken`s. This process further strengthens the `MagicArtifactNFT`, making it a more powerful tool within the game.
 
 This dual-contract system forms the backbone of our game's economy, driving strategic decisions for players and enhancing the gameplay experience.
+
+## Block Explorer and Contracts
+
+- [Verify on Flow Testnet](https://testnet.flowscan.org/account/0x9f0cd65096757818)
+- [Verify testnet deployment on Flow-view-source](https://flow-view-source.com/testnet/account/0x9f0cd65096757818)
